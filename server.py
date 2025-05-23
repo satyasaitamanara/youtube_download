@@ -23,6 +23,7 @@ async def download_video(request: Request):
         'format': 'best',
         'quiet': True,
         'outtmpl': 'downloads/%(title)s.%(ext)s',
+        'cookiefile': 'www.youtube.com.cookies.json', 
     }
 
     if download_type == "audio":
@@ -32,6 +33,7 @@ async def download_video(request: Request):
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
             }],
+            'cookiefile': 'www.youtube.com.cookies.json', 
         })
     else:
         ydl_opts['format'] = 'bestvideo[ext=mp4]'
