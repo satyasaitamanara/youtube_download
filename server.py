@@ -46,5 +46,5 @@ async def download_video(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))  # Fallback for local dev
+    port = int(os.environ.get("PORT", 5000))  # Fallback for local dev
     uvicorn.run(app, host="0.0.0.0", port=port)
