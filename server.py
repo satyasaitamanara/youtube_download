@@ -14,12 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Decode cookies_base64.txt to cookies.txt (if needed)
+# Decode base64 cookie file (binary-safe)
 if os.path.exists("cookies_base64.txt"):
-    with open("cookies_base64.txt", "r") as f:
+    with open("cookies_base64.txt", "rb") as f:  # read as binary
         encoded = f.read()
     with open("cookies.txt", "wb") as f:
         f.write(base64.b64decode(encoded))
+
 
 # Create downloads folder if not exists
 if not os.path.exists("downloads"):
