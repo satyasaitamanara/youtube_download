@@ -1,10 +1,9 @@
-# render.yaml
 services:
   - type: web
     name: youtube-downloader
     env: python
+    plan: free
     buildCommand: |
-      cp server/cookies.txt /opt/render/project/src/server/
       pip install -r requirements.txt
     startCommand: uvicorn server.server:app --host 0.0.0.0 --port $PORT
-    plan: free
+    staticPublishPath: server/downloads
