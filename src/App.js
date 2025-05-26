@@ -23,7 +23,7 @@ function App() {
     const startTime = performance.now(); // Start time
 
     try {
-      const response = await axios.post('https://youtube-download-4yoo.onrender.com/download', {
+      const response = await axios.post('https://youtube-downloader-8jwo.onrender.com/download', {
         url,
         type,
       });
