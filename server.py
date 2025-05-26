@@ -6,7 +6,7 @@ import base64
 
 app = FastAPI()
 
-# CORS middleware (for frontend access)
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,54 +14,55 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Decode base64 cookie file (binary-safe)
+# Decode and save the cookies file from base64
 if os.path.exists("cookies_base64.txt"):
-    with open("cookies_base64.txt", "rb") as f:  # read as binary
+    with open("cookies_base64.txt", "rb") as f:
         encoded = f.read()
     with open("cookies.txt", "wb") as f:
         f.write(base64.b64decode(encoded))
 
-
-# Create downloads folder if not exists
+# Ensure downloads folder exists
 if not os.path.exists("downloads"):
     os.makedirs("downloads")
+
+@app.get("/")
+def root():
+    return {"message": "YouTube Downloader is live."}
 
 @app.post("/download")
 async def download_video(request: Request):
     data = await request.json()
     url = data.get("url")
-    download_type = data.get("type", "video")  # "video" or "audio"
+    download_type = data.get("type", "video")
 
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio/best',
-        'merge_output_format': 'mp4',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
         'quiet': True,
         'no_warnings': True,
         'noplaylist': True,
-        'cookies': 'cookies.txt',  # <-- This is required
+        'cookies': 'cookies.txt',  # must exist and be valid Netscape format
     }
-    
-    if download_type == "audio":
-        ydl_opts.update({
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-            }],
-        })
 
+    if download_type == "audio":
+        ydl_opts['format'] = 'bestaudio/best'
+        ydl_opts['postprocessors'] = [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+        }]
     else:
         ydl_opts['format'] = 'bestvideo[ext=mp4]+bestaudio/best'
+        ydl_opts['merge_output_format'] = 'mp4'
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info)
-            cleaned_filename = filename.replace("\\", "/")  # for Windows paths
+            filename = filename.replace("\\", "/")
+            filename = os.path.basename(filename)
             return {
-                "message": "Download completed",
-                "download_url": f"http://localhost:5000/{cleaned_filename}"
+                "message": "Download successful",
+                "file_name": filename,
+                "download_url": f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')}/downloads/{filename}"
             }
     except Exception as e:
         return {"error": str(e)}
