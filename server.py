@@ -32,16 +32,16 @@ async def download_video(request: Request):
     url = data.get("url")
     download_type = data.get("type", "video")  # "video" or "audio"
 
-    # yt-dlp options
     ydl_opts = {
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
+        'format': 'bestvideo[ext=mp4]+bestaudio/best',
         'merge_output_format': 'mp4',
+        'outtmpl': 'downloads/%(title)s.%(ext)s',
         'quiet': True,
         'no_warnings': True,
         'noplaylist': True,
-        'cookiefile': 'cookies.txt' if os.path.exists("cookies.txt") else None,
+        'cookies': 'cookies.txt',  # <-- This is required
     }
-
+    
     if download_type == "audio":
         ydl_opts.update({
             'format': 'bestaudio/best',
@@ -50,6 +50,7 @@ async def download_video(request: Request):
                 'preferredcodec': 'mp3',
             }],
         })
+
     else:
         ydl_opts['format'] = 'bestvideo[ext=mp4]+bestaudio/best'
 
